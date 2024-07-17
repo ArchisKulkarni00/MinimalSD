@@ -1,0 +1,36 @@
+BNW_High_Contrast:
+  - positive_prompt: black and white film, high contrast, sharp details
+  - negative_prompt: color, soft focus
+Cinematic:
+  - positive_prompt: cinematic, good composition, balanced contrast, shallow focus, color graded, professional lighting
+  - negative_prompt: over saturation, sharp focus, amateur
+Light:
+  - positive_prompt: bright and airy, white balance, pastel colors, deep focus, sharp, low contrast
+  - negative_prompt: dark shadows, warm tones
+Long_Exposure:
+  - positive_prompt: long exposure, smooth actions, motion blur
+  - negative_prompt: sharp details, static scene
+Vintage:
+  - positive_prompt: old camera look, faded colors, grain texture, scratches, damaged photo, low contrast
+  - negative_prompt: digital noise reduction, vibrant colors, perfection, high contrast, digital look
+Split_Toning:
+  - positive_prompt: warm shadows, cool highlights, very high saturation, vibrant, medium contrast
+  - negative_prompt: balanced color tones, cool shadows, warm highlights, muted colors
+Macro:
+  - positive_prompt: extreme close-up, focus stacking, high detail
+  - negative_prompt: wide shot, shallow depth of field
+HDR:
+  - positive_prompt: vibrant colors, high dynamic range, highly detailed, medium contrast
+  - negative_prompt: muted colors, flat lighting, low contrast, low details
+Portrait:
+  - positive_prompt: soft focus, soft light, shallow depth of field, creamy skin tones, bokeh
+  - negative_prompt: sharp details, high contrast
+Golden_Hour:
+  - positive_prompt: golden hour lighting, warm color cast, lens flare
+  - negative_prompt: neutral colors, flat lighting
+Night:
+  - positive_prompt: long exposure, night light, noisy image, motion blur
+  - negative_prompt: bright daylight, clear sky
+Amateur:
+  - positive_prompt: amateur photo, iphone photo, flat lighting
+  - negative_prompt: bokeh, professional photo, good composition, shallow focus

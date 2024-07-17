@@ -1,0 +1,33 @@
+Cinematic_Warmth:
+  - positive_prompt: golden hour lighting, shallow depth of field, cinematic bloom, anamorphic lens flare, warm color palette
+  - negative_prompt: cold tones, deep focus, flat lighting
+Vintage:
+  - positive_prompt: faded colors, film grain texture, light leaks, vignette effect, vintage lens distortion
+  - negative_prompt: sharp details, modern aesthetic
+HDR:
+  - positive_prompt: vibrant colors, high dynamic range, dramatic lighting, epic composition, hyperrealistic scene
+  - negative_prompt: muted colors, flat lighting, mundane scene
+BNW:
+  - positive_prompt: black and white film, high contrast, dramatic shadows, film noir lighting, detective theme
+  - negative_prompt: bright lighting, colorful scene, modern setting
+Impressionist:
+  - positive_prompt: impressionist style, loose brushstrokes, vibrant colors, dappled light, Monet-inspired landscapes
+  - negative_prompt: photorealistic details, sharp lines, defined edges
+Surreal:
+  - positive_prompt: surreal atmosphere, impossible objects, dreamlike imagery, melting clocks, Escher-esque perspective
+  - negative_prompt: realistic scene, grounded objects, logical composition
+PopArt:
+  - positive_prompt: pop art style, Andy Warhol influence, bold outlines, flat colors, iconic imagery, consumer culture references
+  - negative_prompt: subtle colors, realistic textures, detailed scene
+RetroGame:
+  - positive_prompt: pixel art aesthetic, 8-bit color palette, retro game characters, chunky sprites, low-resolution textures
+  - negative_prompt: high resolution, realistic rendering, smooth textures
+ComicBook:
+  - positive_prompt: comic book style, dynamic composition, vibrant colors
+  - negative_prompt: abstract shapes, minimalist elements, muted tones
+Illustration:
+  - positive_prompt: illustration style, normal proportions, sharp, muted colors
+  - negative_prompt: anime, cartoon, anime face, multiple panels
+Minimalist:
+  - positive_prompt: minimalist style, clean lines, negative space, geometric shapes, modern design aesthetic, muted color palette
+  - negative_prompt: cluttered composition, detailed elements, saturated colors

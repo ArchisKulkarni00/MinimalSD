@@ -1,0 +1,13 @@
+positivePrompt: "a cute white cat, black sofa, "
+negativePrompt: "deformed body, joint body, deformed fingers, "
+seed: -1
+heightOfImage: 512
+widthOfImage: 512
+guidanceScale: 4
+numOfSteps: 30
+numOfImages: 1
+preset: Cinematic
+
+# image to image
+inputImage: "./input_image/beautiful-8770113_1280.png"
+i2iStrength: 0.4
