@@ -22,29 +22,24 @@ class TextToImage(ApplicationBaseClass):
                 variant="fp16",
                 use_safetensors=True)
             self.logger.debug("Model found. Pipeline created")
+
+            self.set_scheduler()
+
+            # add lcm and detailer loras
+            if self.configuration['isLCMEnabled'] == "yes":
+                self.set_lcm()
+
+            if self.configuration['isDetailerEnabled'] == "yes":
+                self.set_detailer()
+
+            # move the model to cuda device
+            if torch.cuda.is_available():
+                self.main_pipeline.to("cuda")
+                self.logger.debug("Model loaded on CUDA device.")
+
+            self.logger.info("Model loaded successfully.")
         else:
             self.logger.error("Model not found. Please check the configurations.")
-
-        self.set_scheduler()
-
-        # add lcm and detailer loras
-        if self.configuration['isLCMEnabled'] == "yes":
-            if os.path.exists(os.path.join(self.configuration['loraDir'], "lcm-sd15-lora.safetensors")):
-                self.set_lcm()
-            else:
-                self.logger.error("LCM Lora not found. Make sure it is placed in the lora folder.")
-
-        if self.configuration['isDetailerEnabled'] == "yes":
-            self.set_detailer()
-        else:
-            self.logger.error("Detailer Lora not found. Make sure it is placed in the lora folder.")
-
-        # move the model to cuda device
-        if torch.cuda.is_available():
-            self.main_pipeline.to("cuda")
-            self.logger.debug("Model loaded on CUDA device.")
-
-        self.logger.info("Model loaded successfully.")
 
     # runs the inference on the pipeline to generate the images using input data, and saves them
     # ------------------------------------------------------------------------------------------

@@ -1,4 +1,7 @@
 # Project Specific
+/share
+/etc
+/Library
 SD15/logs
 SD15/outputs
 SD15/input_images

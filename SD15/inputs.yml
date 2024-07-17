@@ -9,5 +9,5 @@ numOfImages: 1
 preset: Cinematic
 
 # image to image
-inputImage: "./input_image/beautiful-8770113_1280.png"
+inputImage: "./input_images/beautiful-8770113_1280.png"
 i2iStrength: 0.4
