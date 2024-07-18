@@ -47,12 +47,13 @@ class TextToImage(ApplicationBaseClass):
         self.reload_inputs()
         self.generate_seed()
         self.process_preset()
+        self.process_prompt_weight()
 
         if self.main_pipeline:
             set_of_images = self.main_pipeline(
-                self.positive_prompt,
+                prompt_embeds=self.positive_embeds,
                 num_inference_steps=self.inputs['numOfSteps'],
-                negative_prompt=self.negative_prompt,
+                negative_propmt_embeds=self.negative_embeds,
                 height=self.inputs['heightOfImage'],
                 width=self.inputs['widthOfImage'],
                 guidance_scale=self.inputs['guidanceScale'],
@@ -86,6 +87,7 @@ class TextToImage(ApplicationBaseClass):
         self.logger = initialize_logging()
         self.is_model_loaded = False
         while True:
+            self.choice = None
             print_main_menu()
             try:
                 self.choice = int(input('Enter your choice:'))
@@ -95,7 +97,8 @@ class TextToImage(ApplicationBaseClass):
             if self.choice == 1:
                 if not self.is_model_loaded:
                     self.load_pipeline()
-                    self.is_model_loaded = True
+                    if self.main_pipeline:
+                        self.is_model_loaded = True
                 else:
                     self.logger.info('Model already loaded, please unload it first.')
 

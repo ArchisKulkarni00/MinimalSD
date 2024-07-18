@@ -33,3 +33,20 @@ Open terminal and head to SD15 folder and run:
 python text_to_image_.py
 ```
 *Replace text_to_image_.py with image_to_image_.py to run image to image pipeline*
+
+## Features:
+**Implemented**
+-[x] Text to image  SD1.5
+-[x] Image to image  SD1.5
+-[x] Upscaler SD1.5
+-[x] Presets
+-[x] Prompt weighting (refer comple library for usage details)
+-[x] add code to preview the generated image
+
+ **Todo**
+ 
+- [ ] add checks for input and config input validations
+- [ ] add bulk input option with csv
+- [ ] add tests
+- [ ] add lora support 
+- [ ] add api support

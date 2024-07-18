@@ -3,6 +3,7 @@ import os
 import warnings
 
 import diffusers
+from comple import Compel
 import torch
 from SD15.utils import load_yaml_file, process_presets, generate_unique_filename, initialize_logging, print_main_menu
 from diffusers import LCMScheduler
@@ -20,6 +21,8 @@ class ApplicationBaseClass:
     seed = None
     positive_prompt = None
     negative_prompt = None
+    positive_embeds = None
+    negative_embeds = None
     is_model_loaded = False
     choice = None
     SCHEDULERS = {
@@ -122,6 +125,12 @@ class ApplicationBaseClass:
             self.positive_prompt = self.inputs['positivePrompt']
             self.negative_prompt = self.inputs['negativePrompt']
 
+    def process_prompt_weight(self):
+        with torch.no_grad():
+            compel = Compel(tokenizer=self.main_pipeline.tokenizer, text_encoder=self.main_pipeline.text_encoder)
+            self.positive_embeds = compel([self.positive_prompt])
+            self.negative_embeds = compel([self.negative_prompt])
+
     def save_image(self, image, index):
         if not os.path.exists(self.configuration['outputDir']):
             os.mkdir(self.configuration['outputDir'])
@@ -129,4 +138,6 @@ class ApplicationBaseClass:
         image.save(
             os.path.join(self.configuration['outputDir'],
                          generate_unique_filename(self.configuration['imageNamePrefix'], index)))
+        if self.configuration["isPreviewEnabled"] == "yes":
+            image.show()
         self.logger.info("Saving image {} of {}.".format(index + 1, self.inputs['numOfImages']))
