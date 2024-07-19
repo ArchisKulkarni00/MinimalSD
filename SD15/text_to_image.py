@@ -25,6 +25,9 @@ class TextToImage(ApplicationBaseClass):
 
             self.set_scheduler()
 
+            if self.configuration['isFastVAEEnabled'] == "yes":
+                self.set_tiny_vae()
+
             # add lcm and detailer loras
             if self.configuration['isLCMEnabled'] == "yes":
                 self.set_lcm()
@@ -53,7 +56,7 @@ class TextToImage(ApplicationBaseClass):
             set_of_images = self.main_pipeline(
                 prompt_embeds=self.positive_embeds,
                 num_inference_steps=self.inputs['numOfSteps'],
-                negative_propmt_embeds=self.negative_embeds,
+                negative_propmt=self.negative_prompt,
                 height=self.inputs['heightOfImage'],
                 width=self.inputs['widthOfImage'],
                 guidance_scale=self.inputs['guidanceScale'],

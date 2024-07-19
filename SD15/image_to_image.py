@@ -28,6 +28,9 @@ class ImageToImage(ApplicationBaseClass):
 
         self.set_scheduler()
 
+        if self.configuration['isFastVAEEnabled'] == "yes":
+            self.set_tiny_vae()
+
         # add lcm and detailer loras
         if self.configuration['isLCMEnabled'] == "yes":
             if os.path.exists(os.path.join(self.configuration['loraDir'], "lcm-sd15-lora.safetensors")):
@@ -54,12 +57,13 @@ class ImageToImage(ApplicationBaseClass):
         # if the code is called externally by t2i, then we set all the parameters there, else we set here
         self.generate_seed()
         self.process_preset()
+        self.process_prompt_weight()
         self.load_image()
 
         if self.input_image and self.main_pipeline:
             self.resize_image()
             set_of_images = self.main_pipeline(
-                self.positive_prompt,
+                prompt_embeds=self.positive_embeds,
                 num_inference_steps=self.inputs['numOfSteps'],
                 negative_prompt=self.negative_prompt,
                 guidance_scale=self.inputs['guidanceScale'],

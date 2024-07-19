@@ -3,10 +3,10 @@ import os
 import warnings
 
 import diffusers
-from comple import Compel
+from compel import Compel
 import torch
 from SD15.utils import load_yaml_file, process_presets, generate_unique_filename, initialize_logging, print_main_menu
-from diffusers import LCMScheduler
+from diffusers import LCMScheduler, AutoencoderTiny
 from random import randint
 
 
@@ -98,6 +98,15 @@ class ApplicationBaseClass:
         else:
             self.logger.error("Detailer Lora not found. Make sure it is placed in the lora folder.")
 
+    def set_tiny_vae(self):
+        if not os.path.join(self.configuration["modelsDir"], "TinyVAE"):
+            os.mkdir(os.path.join(self.configuration["modelsDir"], "TinyVAE"))
+        try:
+            self.main_pipeline.vae = AutoencoderTiny.from_pretrained(
+                os.path.join(self.configuration["modelsDir"], "TinyVAE"), torch_dtype=torch.float16)
+        except:
+            self.logger.error("TinyVAE loading failed, check the required files.")
+
     def generate_seed(self):
         try:
             # generate seed, use -1 for random seed
@@ -129,7 +138,7 @@ class ApplicationBaseClass:
         with torch.no_grad():
             compel = Compel(tokenizer=self.main_pipeline.tokenizer, text_encoder=self.main_pipeline.text_encoder)
             self.positive_embeds = compel([self.positive_prompt])
-            self.negative_embeds = compel([self.negative_prompt])
+            # self.negative_embeds = compel([self.negative_prompt])
 
     def save_image(self, image, index):
         if not os.path.exists(self.configuration['outputDir']):
