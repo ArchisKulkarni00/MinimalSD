@@ -67,6 +67,10 @@ class ApplicationBaseClass:
     def run_this_module(self):
         pass
 
+    def initialize_upscaler(self):
+        self.upscale_pipeline = upscaler.Upscaler()
+        self.upscale_pipeline.logger = self.logger
+
     def reload_configurations(self):
         self.configuration = load_yaml_file("configuration.yml")
         self.logger.debug("Configurations file reloaded.")

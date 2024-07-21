@@ -31,6 +31,10 @@ class ImageToImage(ApplicationBaseClass):
         if self.configuration['isFastVAEEnabled'] == "yes":
             self.set_tiny_vae()
 
+        if self.configuration['isUpscalingEnabled'] == 'yes':
+            self.initialize_upscaler()
+            self.upscale_pipeline.main_pipeline = StableDiffusionImg2ImgPipeline(**self.main_pipeline.components)
+
         # add lcm and detailer loras
         if self.configuration['isLCMEnabled'] == "yes":
             if os.path.exists(os.path.join(self.configuration['loraDir'], "lcm-sd15-lora.safetensors")):
@@ -106,13 +110,10 @@ class ImageToImage(ApplicationBaseClass):
         self.input_image = self.input_image.resize((new_width, new_height))
 
     def upscale_fix(self, low_res_image):
-        self.upscale_pipeline = upscaler.Upscaler()
-        self.upscale_pipeline.logger = self.logger
-        self.upscale_pipeline.positive_prompt = self.positive_prompt
+        self.upscale_pipeline.positive_embeds = self.positive_embeds
         self.upscale_pipeline.negative_prompt = self.negative_prompt
         self.upscale_pipeline.seed = self.seed
         self.upscale_pipeline.reload_configurations()
-        self.upscale_pipeline.main_pipeline = StableDiffusionImg2ImgPipeline(**self.main_pipeline.components)
         self.upscale_pipeline.low_res_image = low_res_image
         self.upscale_pipeline.generate_image()
 
