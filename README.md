@@ -61,6 +61,8 @@ python text_to_image_.py
 - [ ] add lora support 
 - [ ] add api support
 - [ ] add comments to configurations and input ymls
-
+- [ ] add auto model downloading and setup code
+- [ ] add metadata saving into images
+- [ ] add report creation
 - [ ] add list of checkpoints, loras, components that need to be downloaded
 - [ ] fix multiple images generation code at upscaler

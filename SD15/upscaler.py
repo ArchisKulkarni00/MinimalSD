@@ -62,7 +62,7 @@ class Upscaler(ApplicationBaseClass):
 
         if self.main_pipeline:
             set_of_images = self.main_pipeline(
-                self.positive_prompt,
+                prompt_embeds=self.positive_embeds,
                 num_inference_steps=int(self.inputs['numOfSteps']*1.5),
                 negative_prompt=self.negative_prompt,
                 guidance_scale=self.inputs['guidanceScale'],

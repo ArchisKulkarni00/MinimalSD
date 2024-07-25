@@ -5,6 +5,7 @@ import warnings
 import diffusers
 from compel import Compel
 import torch
+from SD15 import upscaler
 from SD15.utils import load_yaml_file, process_presets, generate_unique_filename, initialize_logging, print_main_menu
 from diffusers import LCMScheduler, AutoencoderTiny
 from random import randint
