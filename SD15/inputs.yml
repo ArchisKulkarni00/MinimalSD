@@ -11,3 +11,7 @@ preset: Cinematic
 # image to image
 inputImage: "./input_images/beautiful-8770113_1280.png"
 i2iStrength: 0.4
+
+# Upscaler
+upscaleInputImage: "./input_images/lolz.png"
+upscalerStrength: 0.4

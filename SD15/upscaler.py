@@ -29,17 +29,15 @@ class Upscaler(ApplicationBaseClass):
 
         self.set_scheduler()
 
+        if self.configuration['isFastVAEEnabled'] == "yes":
+            self.set_tiny_vae()
+
         # add lcm and detailer loras
         if self.configuration['isLCMEnabled'] == "yes":
-            if os.path.exists(os.path.join(self.configuration['loraDir'], "lcm-sd15-lora.safetensors")):
-                self.set_lcm()
-            else:
-                self.logger.error("LCM Lora not found. Make sure it is placed in the lora folder.")
+            self.set_lcm()
 
         if self.configuration['isDetailerEnabled'] == "yes":
             self.set_detailer()
-        else:
-            self.logger.error("Detailer Lora not found. Make sure it is placed in the lora folder.")
 
         # move the model to cuda device
         if torch.cuda.is_available():
@@ -54,21 +52,31 @@ class Upscaler(ApplicationBaseClass):
         self.reload_inputs()
         # if the code is called externally by t2i, then we set all the parameters there, else we set here
         if not self.low_res_image:
-            self.generate_seed()
-            self.process_preset()
             self.load_image()
+            image_metadata = self.low_res_image.text
+            if "positive_prompt" in image_metadata:
+                self.positive_prompt = image_metadata['positive_prompt']
+                self.negative_prompt = image_metadata['negative_prompt']
+                self.seed_int = int(image_metadata['seed'])
+                self.guidance_scale = int(image_metadata['guidance_scale'])
+                self.process_prompt_weight()
+            else:
+                self.process_preset()
+                self.logger.debug("No metadata found.")
+            self.generate_seed()
+            self.no_of_steps = self.inputs['numOfSteps']
 
         upscaler_input_image = self.cheap_upscale()
 
         if self.main_pipeline:
             set_of_images = self.main_pipeline(
                 prompt_embeds=self.positive_embeds,
-                num_inference_steps=int(self.inputs['numOfSteps']*1.5),
+                num_inference_steps=int(self.no_of_steps * 1.5),
                 negative_prompt=self.negative_prompt,
-                guidance_scale=self.inputs['guidanceScale'],
+                guidance_scale=self.guidance_scale,
                 generator=self.seed,
                 image=upscaler_input_image,
-                strength=self.inputs['i2iStrength']
+                strength=self.inputs['upscalerStrength']
             ).images
 
             self.low_res_image = None
@@ -79,7 +87,7 @@ class Upscaler(ApplicationBaseClass):
 
     def load_image(self):
         try:
-            self.low_res_image = diffusers.utils.load_image(self.inputs['inputImage'])
+            self.low_res_image = Image.open(self.inputs['upscaleInputImage'])
             self.logger.info("Input image set.")
         except:
             self.logger.error('Loading input image failed.')

@@ -3,6 +3,7 @@ import os
 import warnings
 
 import diffusers
+from PIL.PngImagePlugin import PngInfo
 from compel import Compel
 import torch
 from SD15 import upscaler
@@ -20,6 +21,9 @@ class ApplicationBaseClass:
     upscale_pipeline = None
     logger = None
     seed = None
+    seed_int = None
+    guidance_scale = None
+    no_of_steps = None
     positive_prompt = None
     negative_prompt = None
     positive_embeds = None
@@ -117,11 +121,11 @@ class ApplicationBaseClass:
             # generate seed, use -1 for random seed
             # -------------------------------------
             if self.inputs['seed'] == -1:
-                some_integer = randint(0, 99999999)
-                self.logger.info("Random seed set to: {}".format(str(some_integer)))
-                self.seed = torch.Generator("cpu").manual_seed(some_integer)
+                self.seed_int = randint(0, 99999999)
+                self.logger.info("Random seed set to: {}".format(str(self.seed_int)))
             else:
-                self.seed = torch.Generator("cpu").manual_seed(self.inputs['seed'])
+                self.seed_int = self.inputs['seed']
+            self.seed = torch.Generator("cpu").manual_seed(self.seed_int)
         except:
             self.logger.error('Failed to set the seed.')
 
@@ -148,10 +152,21 @@ class ApplicationBaseClass:
     def save_image(self, image, index):
         if not os.path.exists(self.configuration['outputDir']):
             os.mkdir(self.configuration['outputDir'])
-
+        metadata_writer = self.get_metadata_writer()
         image.save(
             os.path.join(self.configuration['outputDir'],
                          generate_unique_filename(self.configuration['imageNamePrefix'], index)))
         if self.configuration["isPreviewEnabled"] == "yes":
             image.show()
         self.logger.info("Saving image {} of {}.".format(index + 1, self.inputs['numOfImages']))
+
+    def get_metadata_writer(self):
+        metadata_writer = PngInfo()
+        metadata_writer.add_text("positive_prompt", self.positive_prompt)
+        metadata_writer.add_text("negative_prompt", self.negative_prompt)
+        metadata_writer.add_text("seed", str(self.seed_int))
+        if self.inputs and self.configuration:
+            metadata_writer.add_text("guidance_scale", str(self.inputs['guidanceScale']))
+            metadata_writer.add_text("model_name", self.configuration['modelName'])
+
+        return metadata_writer
