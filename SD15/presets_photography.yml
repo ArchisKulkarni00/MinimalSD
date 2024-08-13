@@ -34,3 +34,6 @@ Night:
 Amateur:
   - positive_prompt: amateur photo, iphone photo, flat lighting
   - negative_prompt: bokeh, professional photo, good composition, shallow focus
+Landscape:
+  - positive_prompt: cinematic, (wide angle)+, high dynamic range, deep focus
+  - negative_prompt: muted colors, flat lighting, low contrast, low details

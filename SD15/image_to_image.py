@@ -23,36 +23,34 @@ class ImageToImage(ApplicationBaseClass):
                 variant="fp16",
                 use_safetensors=True)
             self.logger.debug("Model found. Pipeline created")
+
+            # set scheduler, fast (tiny) vae, initialize upscaler
+            self.set_scheduler()
+
+            if self.configuration['isFastVAEEnabled'] == "yes":
+                self.set_tiny_vae()
+
+            if self.configuration['isUpscalingEnabled'] == 'yes':
+                self.initialize_upscaler()
+                self.upscale_pipeline.main_pipeline = StableDiffusionImg2ImgPipeline(**self.main_pipeline.components)
+
+            # add lcm and detailer loras
+            if self.configuration['isLCMEnabled'] == "yes":
+                self.set_lcm()
+
+            if self.configuration['isDetailerEnabled'] == "yes":
+                self.set_detailer()
+
+            # move the model to cuda device
+            if torch.cuda.is_available():
+                self.main_pipeline.to("cuda")
+                self.logger.debug("Model loaded on CUDA device.")
+
+            self.logger.info("Model loaded successfully.")
         else:
             self.logger.error("Model not found. Please check the configurations.")
 
-        self.set_scheduler()
 
-        if self.configuration['isFastVAEEnabled'] == "yes":
-            self.set_tiny_vae()
-
-        if self.configuration['isUpscalingEnabled'] == 'yes':
-            self.initialize_upscaler()
-            self.upscale_pipeline.main_pipeline = StableDiffusionImg2ImgPipeline(**self.main_pipeline.components)
-
-        # add lcm and detailer loras
-        if self.configuration['isLCMEnabled'] == "yes":
-            if os.path.exists(os.path.join(self.configuration['loraDir'], "lcm-sd15-lora.safetensors")):
-                self.set_lcm()
-            else:
-                self.logger.error("LCM Lora not found. Make sure it is placed in the lora folder.")
-
-        if self.configuration['isDetailerEnabled'] == "yes":
-            self.set_detailer()
-        else:
-            self.logger.error("Detailer Lora not found. Make sure it is placed in the lora folder.")
-
-        # move the model to cuda device
-        if torch.cuda.is_available():
-            self.main_pipeline.to("cuda")
-            self.logger.debug("Model loaded on CUDA device.")
-
-        self.logger.info("Model loaded successfully.")
 
     # runs the inference on the pipeline to generate the images using input data, and saves them
     # ------------------------------------------------------------------------------------------
@@ -86,13 +84,15 @@ class ImageToImage(ApplicationBaseClass):
                 else:
                     self.save_image(low_res_image, index)
 
+    # load input image
     def load_image(self):
         try:
-            self.input_image = diffusers.utils.load_image(self.inputs['inputImage'])
+            self.input_image = Image.open(self.inputs['inputImage'])
             self.logger.info("Input image set.")
         except:
             self.logger.error('Loading input image failed.')
 
+    # resize the image to max of 768 since generated image size is same as input image size
     def resize_image(self):
         input_image_width, input_image_height = self.input_image.size
         if input_image_width <= 768 and input_image_height <= 768:
@@ -109,6 +109,7 @@ class ImageToImage(ApplicationBaseClass):
             new_width = new_width + (8 - (new_width % 8))
         self.input_image = self.input_image.resize((new_width, new_height))
 
+    # initialize data in upscaler and trigger image build
     def upscale_fix(self, low_res_image):
         self.upscale_pipeline.positive_embeds = self.positive_embeds
         self.upscale_pipeline.negative_prompt = self.negative_prompt
@@ -123,17 +124,22 @@ class ImageToImage(ApplicationBaseClass):
         diffusers.utils.logging.set_verbosity(50)
         self.logger = initialize_logging()
         self.is_model_loaded = False
+
+        # run a infinite loop inputing user choice of operation
         while True:
+            self.choice = None
             print_main_menu()
             try:
                 self.choice = int(input('Enter your choice:'))
             except ValueError:
-                self.logger.warn("Please add a input")
+                self.logger.warning("Please add a input")
+
             # load the pipeline
             if self.choice == 1:
                 if not self.is_model_loaded:
                     self.load_pipeline()
-                    self.is_model_loaded = True
+                    if self.main_pipeline:
+                        self.is_model_loaded = True
                 else:
                     self.logger.info('Model already loaded, please unload it first.')
 

@@ -14,6 +14,7 @@ class TextToImage(ApplicationBaseClass):
     # --------------------------------------------------------------------------------
     def load_pipeline(self):
         self.reload_configurations()
+
         model_path = os.path.join(self.configuration['modelsDir'], self.configuration['modelName'])
         if os.path.exists(model_path):
             self.main_pipeline = StableDiffusionPipeline.from_single_file(
@@ -23,6 +24,7 @@ class TextToImage(ApplicationBaseClass):
                 use_safetensors=True)
             self.logger.debug("Model found. Pipeline created")
 
+            # set scheduler, fast (tiny) vae, initialize upscaler
             self.set_scheduler()
 
             if self.configuration['isFastVAEEnabled'] == "yes":
@@ -51,21 +53,23 @@ class TextToImage(ApplicationBaseClass):
     # runs the inference on the pipeline to generate the images using input data, and saves them
     # ------------------------------------------------------------------------------------------
     def generate_image(self):
+        # reload inputs, generate seed, process the preset, process prompt weights
         self.reload_inputs()
         self.generate_seed()
         self.process_preset()
         self.process_prompt_weight()
 
+        # generate and save the image
         if self.main_pipeline:
             set_of_images = self.main_pipeline(
                 prompt_embeds=self.positive_embeds,
-                num_inference_steps=self.inputs['numOfSteps'],
-                negative_propmt=self.negative_prompt,
+                num_inference_steps=self.no_of_steps,
+                negative_prompt=self.negative_prompt,
+                guidance_scale=self.guidance_scale,
+                generator=self.seed,
                 height=self.inputs['heightOfImage'],
                 width=self.inputs['widthOfImage'],
-                guidance_scale=self.inputs['guidanceScale'],
-                generator=self.seed,
-                num_images_per_prompt=self.inputs['numOfImages']
+                num_images_per_prompt=self.num_images_per_prompt
             ).images
 
             # if upscaler is enabled the final output is saved by the upscaler, else it is saved by this file
@@ -76,10 +80,14 @@ class TextToImage(ApplicationBaseClass):
                 else:
                     self.save_image(low_res_image, index)
 
+    # initialize data in upscaler and trigger image build
     def upscale_fix(self, low_res_image):
         self.upscale_pipeline.positive_embeds = self.positive_embeds
         self.upscale_pipeline.negative_prompt = self.negative_prompt
         self.upscale_pipeline.seed = self.seed
+        self.upscale_pipeline.no_of_steps = self.no_of_steps
+        self.upscale_pipeline.guidance_scale = self.guidance_scale
+        self.upscale_pipeline.steps_multiplier = (1/self.inputs['upscalerStrength'])
         self.upscale_pipeline.reload_configurations()
         self.upscale_pipeline.low_res_image = low_res_image
         self.upscale_pipeline.generate_image()
@@ -90,13 +98,16 @@ class TextToImage(ApplicationBaseClass):
         diffusers.utils.logging.set_verbosity(50)
         self.logger = initialize_logging()
         self.is_model_loaded = False
+
+        # run a infinite loop inputing user choice of operation
         while True:
             self.choice = None
             print_main_menu()
             try:
                 self.choice = int(input('Enter your choice:'))
             except ValueError:
-                self.logger.warn("Please add a input")
+                self.logger.warning("Please add a input")
+
             # load the pipeline
             if self.choice == 1:
                 if not self.is_model_loaded:

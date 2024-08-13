@@ -11,6 +11,7 @@ from diffusers import StableDiffusionImg2ImgPipeline
 
 class Upscaler(ApplicationBaseClass):
     low_res_image = None
+    steps_multiplier = 1.0
 
     # Loads the stable diffusion pipeline, assigns scheduler, adds loras, moves to gpu
     # --------------------------------------------------------------------------------
@@ -24,46 +25,50 @@ class Upscaler(ApplicationBaseClass):
                 variant="fp16",
                 use_safetensors=True)
             self.logger.debug("Model found. Pipeline created")
+
+            # set scheduler, fast (tiny) vae, initialize upscaler
+            self.set_scheduler()
+
+            if self.configuration['isFastVAEEnabled'] == "yes":
+                self.set_tiny_vae()
+
+            # add lcm and detailer loras
+            if self.configuration['isLCMEnabled'] == "yes":
+                self.set_lcm()
+
+            if self.configuration['isDetailerEnabled'] == "yes":
+                self.set_detailer()
+
+            # move the model to cuda device
+            if torch.cuda.is_available():
+                self.main_pipeline.to("cuda")
+                self.logger.debug("Upscale model loaded on CUDA device.")
+
+            self.logger.info("Upscale model loaded successfully.")
         else:
             self.logger.error("Model not found. Please check the configurations.")
-
-        self.set_scheduler()
-
-        if self.configuration['isFastVAEEnabled'] == "yes":
-            self.set_tiny_vae()
-
-        # add lcm and detailer loras
-        if self.configuration['isLCMEnabled'] == "yes":
-            self.set_lcm()
-
-        if self.configuration['isDetailerEnabled'] == "yes":
-            self.set_detailer()
-
-        # move the model to cuda device
-        if torch.cuda.is_available():
-            self.main_pipeline.to("cuda")
-            self.logger.debug("Upscale model loaded on CUDA device.")
-
-        self.logger.info("Upscale model loaded successfully.")
 
     # runs the inference on the pipeline to generate the images using input data, and saves them
     # ------------------------------------------------------------------------------------------
     def generate_image(self):
+        # reload inputs, generate seed, process the preset, process prompt weights
         self.reload_inputs()
+        self.guidance_scale = float(self.inputs['guidanceScale'])
         # if the code is called externally by t2i, then we set all the parameters there, else we set here
         if not self.low_res_image:
             self.load_image()
+            self.steps_multiplier = 1.5
             image_metadata = self.low_res_image.text
             if "positive_prompt" in image_metadata:
                 self.positive_prompt = image_metadata['positive_prompt']
                 self.negative_prompt = image_metadata['negative_prompt']
                 self.seed_int = int(image_metadata['seed'])
-                self.guidance_scale = int(image_metadata['guidance_scale'])
+                self.seed = torch.Generator("cpu").manual_seed(self.seed_int)
                 self.process_prompt_weight()
             else:
                 self.process_preset()
                 self.logger.debug("No metadata found.")
-            self.generate_seed()
+
             self.no_of_steps = self.inputs['numOfSteps']
 
         upscaler_input_image = self.cheap_upscale()
@@ -71,7 +76,7 @@ class Upscaler(ApplicationBaseClass):
         if self.main_pipeline:
             set_of_images = self.main_pipeline(
                 prompt_embeds=self.positive_embeds,
-                num_inference_steps=int(self.no_of_steps * 1.5),
+                num_inference_steps=int(self.no_of_steps * self.steps_multiplier),
                 negative_prompt=self.negative_prompt,
                 guidance_scale=self.guidance_scale,
                 generator=self.seed,
@@ -104,12 +109,16 @@ class Upscaler(ApplicationBaseClass):
         diffusers.utils.logging.set_verbosity(50)
         self.logger = initialize_logging()
         self.is_model_loaded = False
+
+        # run a infinite loop inputing user choice of operation
         while True:
+            self.choice = None
             print_main_menu()
             try:
                 self.choice = int(input('Enter your choice:'))
             except ValueError:
                 self.logger.warn("Please add a input")
+
             # load the pipeline
             if self.choice == 1:
                 if not self.is_model_loaded:

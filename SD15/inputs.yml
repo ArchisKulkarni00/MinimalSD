@@ -13,5 +13,5 @@ inputImage: "./input_images/beautiful-8770113_1280.png"
 i2iStrength: 0.4
 
 # Upscaler
-upscaleInputImage: "./input_images/lolz.png"
-upscalerStrength: 0.4
+upscaleInputImage: "./input_images/fort (7).png"
+upscalerStrength: 0.5
