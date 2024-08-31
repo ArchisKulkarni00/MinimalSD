@@ -52,17 +52,20 @@ python text_to_image_.py
 -[x] Prompt weighting (refer comple library for usage details)
 -[x] add code to preview the generated image
 -[x] add support for tiny vae
+-[x] add lora support 
+-[x] add metadata saving into images
+- [x] add comments to configurations and input ymls
 
  **Todo**
  
 - [ ] add checks for input and config input validations
 - [ ] add bulk input option with csv
 - [ ] add tests
-- [ ] add lora support 
 - [ ] add api support
-- [ ] add comments to configurations and input ymls
 - [ ] add auto model downloading and setup code
-- [ ] add metadata saving into images
 - [ ] add report creation
 - [ ] add list of checkpoints, loras, components that need to be downloaded
 - [ ] fix multiple images generation code at upscaler
+- [ ] distributable code setup
+- [ ] add example codes
+- [ ] create detailed usage and specifications guide

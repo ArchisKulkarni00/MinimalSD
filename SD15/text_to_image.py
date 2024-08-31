@@ -34,12 +34,7 @@ class TextToImage(ApplicationBaseClass):
                 self.initialize_upscaler()
                 self.upscale_pipeline.main_pipeline = StableDiffusionImg2ImgPipeline(**self.main_pipeline.components)
 
-            # add lcm and detailer loras
-            if self.configuration['isLCMEnabled'] == "yes":
-                self.set_lcm()
-
-            if self.configuration['isDetailerEnabled'] == "yes":
-                self.set_detailer()
+            self.set_loras()
 
             # move the model to cuda device
             if torch.cuda.is_available():
@@ -119,6 +114,7 @@ class TextToImage(ApplicationBaseClass):
 
             # generate the image if model is loaded
             elif self.choice == 2:
+                # self.set_loras()
                 if not self.is_model_loaded:
                     self.logger.info("Load the model first.")
                 else:

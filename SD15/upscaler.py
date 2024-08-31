@@ -32,12 +32,7 @@ class Upscaler(ApplicationBaseClass):
             if self.configuration['isFastVAEEnabled'] == "yes":
                 self.set_tiny_vae()
 
-            # add lcm and detailer loras
-            if self.configuration['isLCMEnabled'] == "yes":
-                self.set_lcm()
-
-            if self.configuration['isDetailerEnabled'] == "yes":
-                self.set_detailer()
+            self.set_loras()
 
             # move the model to cuda device
             if torch.cuda.is_available():

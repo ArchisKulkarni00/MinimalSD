@@ -1,11 +1,11 @@
 import os
 
 import diffusers
+import PIL.Image
 import torch
-from SD15 import upscaler
 from SD15.ApplicationBaseClass import ApplicationBaseClass
 from SD15.utils import print_main_menu, initialize_logging
-from diffusers import StableDiffusionPipeline, StableDiffusionImg2ImgPipeline
+from diffusers import StableDiffusionImg2ImgPipeline
 
 
 class ImageToImage(ApplicationBaseClass):
@@ -34,12 +34,7 @@ class ImageToImage(ApplicationBaseClass):
                 self.initialize_upscaler()
                 self.upscale_pipeline.main_pipeline = StableDiffusionImg2ImgPipeline(**self.main_pipeline.components)
 
-            # add lcm and detailer loras
-            if self.configuration['isLCMEnabled'] == "yes":
-                self.set_lcm()
-
-            if self.configuration['isDetailerEnabled'] == "yes":
-                self.set_detailer()
+            self.set_loras()
 
             # move the model to cuda device
             if torch.cuda.is_available():
@@ -49,8 +44,6 @@ class ImageToImage(ApplicationBaseClass):
             self.logger.info("Model loaded successfully.")
         else:
             self.logger.error("Model not found. Please check the configurations.")
-
-
 
     # runs the inference on the pipeline to generate the images using input data, and saves them
     # ------------------------------------------------------------------------------------------
@@ -66,9 +59,9 @@ class ImageToImage(ApplicationBaseClass):
             self.resize_image()
             set_of_images = self.main_pipeline(
                 prompt_embeds=self.positive_embeds,
-                num_inference_steps=self.inputs['numOfSteps'],
+                num_inference_steps=self.no_of_steps,
                 negative_prompt=self.negative_prompt,
-                guidance_scale=self.inputs['guidanceScale'],
+                guidance_scale=self.guidance_scale,
                 generator=self.seed,
                 image=self.input_image,
                 strength=self.inputs['i2iStrength']
@@ -87,7 +80,8 @@ class ImageToImage(ApplicationBaseClass):
     # load input image
     def load_image(self):
         try:
-            self.input_image = Image.open(self.inputs['inputImage'])
+            # self.input_image = PIL.Image.open(self.inputs['inputImage'])
+            self.input_image = diffusers.utils.load_image(self.inputs['inputImage'])
             self.logger.info("Input image set.")
         except:
             self.logger.error('Loading input image failed.')

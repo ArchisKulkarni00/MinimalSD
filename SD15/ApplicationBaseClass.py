@@ -31,6 +31,8 @@ class ApplicationBaseClass:
     negative_embeds = None
     is_model_loaded = False
     choice = None
+    num_images_per_prompt = None
+    loras_list = []
     SCHEDULERS = {
         "unipc": diffusers.schedulers.UniPCMultistepScheduler,
         "euler_a": diffusers.schedulers.EulerAncestralDiscreteScheduler,
@@ -53,11 +55,11 @@ class ApplicationBaseClass:
     # 3 Main functions
     # ----------------
 
-    # implmented by individual classes
+    # implemented by individual classes
     def load_pipeline(self):
         pass
 
-    # implmented by individual classes
+    # implemented by individual classes
     def generate_image(self):
         pass
 
@@ -94,36 +96,37 @@ class ApplicationBaseClass:
         self.inputs = load_yaml_file("inputs.yml")
         self.positive_prompt = self.inputs['positivePrompt']
         self.no_of_steps = self.inputs['numOfSteps']
-        self.negative_propmt = self.inputs['negativePrompt']
+        self.negative_prompt = self.inputs['negativePrompt']
         self.guidance_scale = self.inputs['guidanceScale']
         self.num_images_per_prompt = self.inputs['numOfImages']
         self.logger.debug("Inputs file reloaded.")
 
-    # sets the sceduler
+    # sets the scheduler
     def set_scheduler(self):
-        self.main_pipeline.scheduler = (self.SCHEDULERS[self.configuration['scheduler']].
-                                        from_config(self.main_pipeline.scheduler.config))
+        if self.configuration['isLCMEnabled'] == 'yes':
+            self.main_pipeline.scheduler = LCMScheduler.from_config(self.main_pipeline.scheduler.config)
+        else:
+            self.main_pipeline.scheduler = (self.SCHEDULERS[self.configuration['scheduler']].
+                                            from_config(self.main_pipeline.scheduler.config))
         self.logger.debug("Loaded scheduler {}.".format(self.configuration['scheduler']))
 
-    # sets the lcm lora
-    def set_lcm(self):
-        if os.path.exists(os.path.join(self.configuration['loraDir'], "lcm-sd15-lora.safetensors")):
-            self.main_pipeline.load_lora_weights(
-                os.path.join(self.configuration['loraDir'], "lcm-sd15-lora.safetensors"))
-            self.main_pipeline.scheduler = LCMScheduler.from_config(self.main_pipeline.scheduler.config)
-            self.logger.debug("Loaded LCM lora.")
-        else:
-            self.logger.error("LCM Lora not found. Make sure it is placed in the lora folder.")
-
-    # sets the detailer lora
-    def set_detailer(self):
-        if os.path.exists(os.path.join(self.configuration['loraDir'], "sd15_add_detail.safetensors")):
-            self.main_pipeline.load_lora_weights(
-                os.path.join(self.configuration['loraDir'], "sd15_add_detail.safetensors"))
-            self.main_pipeline.fuse_lora(lora_scale=1.0)
-            self.logger.debug("Loaded detailer lora.")
-        else:
-            self.logger.error("Detailer Lora not found. Make sure it is placed in the lora folder.")
+    def set_loras(self):
+        self.reload_inputs()
+        lora_list = self.inputs['loras']
+        lora_names = []
+        lora_weights = []
+        for lora in lora_list:
+            name, weight = next(iter(lora.items()))
+            if os.path.exists(os.path.join(self.configuration['loraDir'], name + ".safetensors")):
+                lora_names.append(name)
+                lora_weights.append(weight)
+                self.main_pipeline.load_lora_weights(os.path.join(self.configuration['loraDir'], name + ".safetensors"),
+                                                     weight_name=name + ".safetensors",
+                                                     adapter_name=name)
+            else:
+                self.logger.debug("Lora not found {}.".format(name))
+        self.main_pipeline.set_adapters(lora_names, adapter_weights=lora_weights)
+        self.logger.info("Loaded Loras")
 
     # sets the tiny vae which helps in speeding up inference
     def set_tiny_vae(self):
@@ -178,7 +181,8 @@ class ApplicationBaseClass:
         metadata_writer = self.get_metadata_writer()
         image.save(
             os.path.join(self.configuration['outputDir'],
-                         generate_unique_filename(self.configuration['imageNamePrefix'], index)), pnginfo=metadata_writer)
+                         generate_unique_filename(self.configuration['imageNamePrefix'], index)),
+            pnginfo=metadata_writer)
         if self.configuration["isPreviewEnabled"] == "yes":
             image.show()
         self.logger.info("Saving image {} of {}.".format(index + 1, self.inputs['numOfImages']))

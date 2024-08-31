@@ -1,17 +1,24 @@
-positivePrompt: "a cute white cat, black sofa, "
-negativePrompt: "deformed body, joint body, deformed fingers, "
+positivePrompt: "Indian landscape, blue waters, mountains tropical forest, sunny day, "
+negativePrompt: "worst quality, deformed body, deformed face, joint body, deformed fingers, torn clothes, "
 seed: -1
 heightOfImage: 512
 widthOfImage: 512
 guidanceScale: 4
-numOfSteps: 30
+numOfSteps: 40
 numOfImages: 1
 preset: Cinematic
 
 # image to image
-inputImage: "./input_images/beautiful-8770113_1280.png"
-i2iStrength: 0.4
+inputImage: "./input_images/asd.jpg"
+i2iStrength: 0.5
 
 # Upscaler
-upscaleInputImage: "./input_images/fort (7).png"
-upscalerStrength: 0.5
+upscaleInputImage: "./input_images/man (2).png"
+upscalerStrength: 0.35
+
+#Loras
+loras:
+  - lcm-sd15-lora: 0.0
+  - sd15_add_detail: 1.0
+  - epiCRealismHelper: 0.75
+  - epi_noiseoffset2: 0.15
