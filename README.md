@@ -1,71 +1,121 @@
-# MinimalSD
-Minimalistic stable diffusion based on 🤗 Diffusers library.
+# MinimalSD 🖌️
+
+Minimalistic Stable Diffusion, powered by 🤗 Diffusers Library
+
+---
 
 ## Overview
-### What this application is?
-This is a minimal implementation of the stable diffusion pipeline for various tasks.
 
-It is expected to be minimal on the system, simple to use and the code should be easier to understand.
+### What _is_ MinimalSD?
 
-### What this application is not?
+MinimalSD is a lightweight, code-focused implementation of the Stable Diffusion pipeline, designed for various creative tasks. It's engineered to keep things easy on system resources, simple to use, and straightforward for developers to understand.
 
-An alternative to existing applications like A1111, ComfyUI, Fooocus, Invoke or SD webui. These are already matured pieces of software and I do not intend to start a race with them.
+### What MinimalSD _isn't_!
 
-### Then why this application?
+This isn't a replacement for robust, feature-packed apps like A1111, ComfyUI, Fooocus, Invoke, or SD WebUI. Those are powerful, full-fledged programs. MinimalSD is here for those who prefer to get their hands into the code without all the extra frills.
 
-Simply put i wanted to do some shenanigans with stable diffusion using pure code rather than a UI. Hence i created this application which is quite close to pure code and also has a minimal interface, thus serving the needs of programmers and non-programming folks alike. 
+### Why MinimalSD?
 
-This  application can be used as a standalone app or as a base library for creating stable diffusion based applications.
+Because sometimes, you just want a bit of coding freedom without wrestling with UIs. MinimalSD is built with simplicity in mind, delivering a lean, almost pure-code experience. Whether you're a programmer or just someone who prefers minimalism, this library can serve as a standalone app or as a foundational library for your own Stable Diffusion-based creations. 🎉
 
-## Installation
+---
 
-Currently I have not compiled the code to any distributable format like exe etc, and that is planned for future. Right now it expects python to be installed on the system to run. Follow the instructions below:
-1. Clone the repo, or download the source code.
-2. Create a virtual env and activate it.(optional step)
-3. Open terminal or powershell in the folder with requirements.txt and type "python requirements.txt".
-4. It should install most of the required packages.
-5. Pytorch needs to be installed separately as it can be platform dependent for CUDA enabled cards. Head to [Start Locally | PyTorch](https://pytorch.org/get-started/locally/) 
-6. Select appropriate OS, stable build, package, language and platform. Copy the generated command and paste in same terminal/powershell.
+## Installation 🚀
 
-### Installing Tiny VAE (Optional)
-[Tiny VAE](https://huggingface.co/madebyollin/taesd) is a replacement for a component in stable diffusion pipeline called VAE.
-This version of VAE reduces image generation time and memory usage, at the cost of image quality.
-Steps to install:
-1. Head over to [Tiny VAE Files Page](https://huggingface.co/madebyollin/taesd/tree/main)
-2. Download "diffusion_pytorch_model.safetensors"
-3. Download "config.json"
-4. Place these files in your models folder under your_models_folder/TinyVAE/the_downloaded_files
+> **Note**: Currently, there's no executable distribution (like .exe files). MinimalSD runs on Python, so you'll need that installed. But stay tuned—plans for compiled versions are in the works!
 
-### Running the code
-Open terminal and head to SD15 folder and run:
-```commandline
+1. **Clone** the repo or download the source.
+2. **Set up a virtual environment** (optional but recommended):
+    
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
+    
+3. **Install dependencies**:
+    
+    ```bash
+    python -m pip install -r requirements.txt
+    ```
+    
+4. **Install PyTorch**: Go to [PyTorch Start Locally](https://pytorch.org/get-started/locally/) to download the version compatible with your system, especially if you’re using CUDA-enabled GPUs.
+
+---
+
+### Optional: Installing Tiny VAE
+
+Tiny VAE is a streamlined version of the Variational Autoencoder used in Stable Diffusion, cutting down generation time and memory load—at a slight cost to image quality. Here’s how to add it:
+
+1. Visit [Tiny VAE Files](https://huggingface.co/madebyollin/taesd/tree/main).
+2. Download `diffusion_pytorch_model.safetensors` and `config.json`.
+3. Place these files in your models directory under `your_models_folder/TinyVAE/`.
+
+---
+
+## Running the Code 🏃
+
+In your terminal, navigate to the SD15 folder and run:
+
+```bash
 python text_to_image_.py
 ```
-*Replace text_to_image_.py with image_to_image_.py to run image to image pipeline*
 
-## Features:
-**Implemented**
--[x] Text to image  SD1.5
--[x] Image to image  SD1.5
--[x] Upscaler SD1.5
--[x] Presets
--[x] Prompt weighting (refer comple library for usage details)
--[x] add code to preview the generated image
--[x] add support for tiny vae
--[x] add lora support 
--[x] add metadata saving into images
-- [x] add comments to configurations and input ymls
+Switch to `image_to_image_.py` to use the image-to-image pipeline.
 
- **Todo**
- 
-- [ ] add checks for input and config input validations
-- [ ] add bulk input option with csv
-- [ ] add tests
-- [ ] add api support
-- [ ] add auto model downloading and setup code
-- [ ] add report creation
-- [ ] add list of checkpoints, loras, components that need to be downloaded
-- [ ] fix multiple images generation code at upscaler
-- [ ] distributable code setup
-- [ ] add example codes
-- [ ] create detailed usage and specifications guide
+### File and directory structure
+Under SD15 folder you will find:
+- **/input-images**: stores external images useful as inputs, for image to image or upscaling 
+- **/jupyter-notebooks**: minimal jupyter notebook version of the codes
+- **/loras**: stores all the lora files
+- **/models**: stores all the model files
+- **/outputs**: stores output of images
+- **configuration.yml**: stores all the configurations for stable diffusion. think like settings for the applications. read every time the mode is loaded to the memory. if some changes are made to this, reload the model to apply the changes.
+- **inputs.yml**: stores the input information for the model, including the prompts, guidance scale, image paths etc. this is where you prompt, save and run inference. read every time image is generated.
+- **text_to_image.py**: contains code for text to image
+- **image_to_image.py**: contains code for image to image
+
+### Basic usage flow
+```
+run text_to_image.py --> set your settings in configurations.yml --> load the model --> update the prompt and other fields in inputs.yml --> Generate images --> keep updating prompt and generating images --> remove the model
+```
+---
+## Screenshots
+
+Coming soon...😉
+
+---
+## Features 🎨
+
+**Implemented so far:**
+
+- ✔️ Text-to-Image (SD 1.5)
+- ✔️ Image-to-Image (SD 1.5)
+- ✔️ Upscaling (SD 1.5)
+- ✔️ Presets
+- ✔️ Prompt weighting (see comple library for more details)
+- ✔️ Image previews
+- ✔️ Tiny VAE support
+- ✔️ LoRA (Low-Rank Adaptation) integration
+- ✔️ Metadata saving within images
+- ✔️ Commented configurations and YAML input files
+
+**On the To-Do List:**
+
+- 🔲 Input validation and configuration checks
+- 🔲 Bulk input option via CSV
+- 🔲 Testing suite
+- 🔲 API support
+- 🔲 Automated model downloading and setup
+- 🔲 Report generation
+- 🔲 List of checkpoints, LoRAs, and components for download
+- 🔲 Multi-image generation at the upscaler level
+- 🔲 Distributable setup
+- 🔲 Example code snippets
+- 🔲 Detailed usage and specifications guide
+
+---
+
+### Get in Touch!
+
+If you have ideas, improvements, or just want to geek out about diffusion models, feel free to open an issue or submit a pull request!
+
